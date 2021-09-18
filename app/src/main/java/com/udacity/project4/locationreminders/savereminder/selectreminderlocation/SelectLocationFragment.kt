@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.location.Location
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.*
 import android.widget.SearchView
@@ -45,14 +47,15 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import java.util.*
 
 
-class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
+class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
 
+    val TAG= "SelectLocationFragment"
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
     lateinit var mapView: MapView
     private lateinit var map: GoogleMap
-
+    private var poiSelected = false
     private val REQUEST_LOCATION_PERMISSION = 1
 
     override fun onCreateView(
@@ -85,6 +88,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 //        //         send back the selected location details to the view model
 //        //         and navigate back to the previous fragment to save the reminder and add the geofence
 //    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause")
+    }
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -120,31 +128,27 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-//         Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney))
         val latitude = 22.527141
         val longitude = 114.050752
         val zoomLevel = 18f
-        val overlaySize = 100f
+//        val overlaySize = 100f
 
         val homeLatLng = LatLng(latitude, longitude)
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
+//        locationRequest = LocationRequest()
+//        fusedLocationClient?.requestLocationUpdates(locationRequest, locationCallback, null)
+//        map.isMyLocationEnabled = true
 
-        map.apply {
-            moveCamera(CameraUpdateFactory.newLatLngZoom(homeLatLng, zoomLevel))
-            addMarker(MarkerOptions().position(homeLatLng))
-        }
-
-        val androidOverlay = GroundOverlayOptions()
-            .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
-            .position(homeLatLng, overlaySize)
-
-        map.addGroundOverlay((androidOverlay))
+        // Add little green bot image
+//        val androidOverlay = GroundOverlayOptions()
+//            .image(BitmapDescriptorFactory.fromResource(R.drawable.android))
+//            .position(homeLatLng, overlaySize)
+//        map.addGroundOverlay((androidOverlay))
 //        setMapLongClick(map)
-//        setPoiClick(map)
+        setPoiClick(map)
 //        setMapStyle(map)
         enableMyLocation()
+
     }
 //
 //    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -153,35 +157,53 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 //        return true
 //    }
 
-//    private fun setMapLongClick(map: GoogleMap) {
-//        map.setOnMapLongClickListener { latLng ->
-//            val snippet = String.format(
-//                Locale.getDefault(),
-//                "Lat: %1$.5f, Long: %2$.5f",
-//                latLng.latitude,
-//                latLng.longitude
-//            )
-//
-//            map.addMarker(
-//                MarkerOptions()
-//                    .position(latLng)
-//                    .title(getString(R.string.dropped_pin))
-//                    .snippet(snippet)
-//                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-//            )
-//        }
-//    }
-//
-//    private fun setPoiClick(map: GoogleMap) {
-//        map.setOnPoiClickListener { poi ->
-//            val poiMarker = map.addMarker(
-//                MarkerOptions()
-//                    .position(poi.latLng)
-//                    .title(poi.name)
-//            )
-//            poiMarker.showInfoWindow()
-//        }
-//    }
+    private fun setMapLongClick(map: GoogleMap) {
+        map.setOnMapLongClickListener { latLng ->
+            val snippet = String.format(
+                Locale.getDefault(),
+                "Lat: %1$.5f, Long: %2$.5f",
+                latLng.latitude,
+                latLng.longitude
+            )
+
+            map.addMarker(
+                MarkerOptions()
+                    .position(latLng)
+                    .title(getString(R.string.dropped_pin))
+                    .snippet(snippet)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            )
+        }
+    }
+
+    private fun setPoiClick(map: GoogleMap): Marker {
+        fun setMarker(map: GoogleMap, poi: PointOfInterest): Marker {
+            val poiMarker = map.addMarker(
+                MarkerOptions()
+                    .position(poi.latLng)
+                    .title(poi.name)
+            )
+            poiMarker.showInfoWindow()
+            poiSelected = true
+
+            return poiMarker
+        }
+
+        var poiMarker: Marker
+
+        map.setOnPoiClickListener { poi ->
+            if (!poiSelected) {
+                poiMarker = setMarker(map, poi)
+
+            } else {
+                map.clear()
+                poiSelected = false
+                poiMarker = setMarker(map, poi)
+            }
+        }
+
+        return poiMarker
+    }
 
 //    private fun setMapStyle(map: GoogleMap) {
 //        try {
@@ -229,4 +251,24 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             }
         }
     }
+
+//    private var locationCallback: LocationCallback = object: LocationCallback() {
+//        override fun onLocationResult(locationResult: LocationResult) {
+//            val locationList = locationResult.locations
+//            if (locationList.isNotEmpty()) {
+//                //The last location in the list is the newest
+//                val location = locationList.last()
+//                Log.i(
+//                    "MapsActivity",
+//                    "Location: " + location.getLatitude() + " " + location.getLongitude()
+//                )
+//
+//                //Place current location marker
+//                val latLng = LatLng(location.latitude, location.longitude)
+//
+//                //move map camera
+//                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11.0F))
+//            }
+//        }
+//    }
 }

@@ -39,7 +39,7 @@ class RemindersActivityTest :
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
-                    appContext,
+//                    appContext,
                     get() as ReminderDataSource
                 )
             }

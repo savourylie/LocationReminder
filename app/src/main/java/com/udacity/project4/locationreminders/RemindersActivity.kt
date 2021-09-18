@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -16,10 +17,22 @@ import kotlinx.android.synthetic.main.activity_reminders.*
  */
 class RemindersActivity : AppCompatActivity() {
 
+    val TAG = "Dev/RemindersActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate")
         setContentView(R.layout.activity_reminders)
+    }
 
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy")
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

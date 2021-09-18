@@ -8,18 +8,18 @@ import java.util.LinkedHashMap
 
 //Use FakeDataSource that acts as a test double to the LocalDataSource
 class FakeDataSource(var reminders: MutableList<ReminderDTO>? = mutableListOf()) : ReminderDataSource {
+    private var shouldReturnError = false
 
-    var remindersServiceData: LinkedHashMap<String, ReminderDTO> = LinkedHashMap()
-    private val observableReminders = MutableLiveData<Result<List<ReminderDTO>>>()
-
-    suspend fun refreshReminders() {
-        observableReminders.value = getReminders()
+    fun setReturnError(value: Boolean) {
+        shouldReturnError = value
     }
 
     //    TODO: Create a fake data source to act as a double to the real data source
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
-        reminders?.let {
-            return Result.Success(ArrayList(it))
+        if (!shouldReturnError) {
+            reminders?.let {
+                return Result.Success(ArrayList(it))
+            }
         }
 
         return Result.Error(message = "Sorry, no data. You need to look somewhere else man.",
@@ -31,8 +31,10 @@ class FakeDataSource(var reminders: MutableList<ReminderDTO>? = mutableListOf())
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {
-        reminders?.let {
-            return Result.Success(ArrayList(it)[0])
+        if (!shouldReturnError) {
+            reminders?.let {
+                return Result.Success(ArrayList(it)[0])
+            }
         }
 
         return Result.Error(
@@ -45,10 +47,9 @@ class FakeDataSource(var reminders: MutableList<ReminderDTO>? = mutableListOf())
         reminders?.clear()
     }
 
-    fun addReminders(vararg reminders: ReminderDTO) {
-        for (reminder in reminders) {
-            remindersServiceData[reminder.id] = reminder
+    fun addReminders(vararg remindersArgs: ReminderDTO) {
+        for (reminder in remindersArgs) {
+            reminders?.add(reminder)
         }
-        runBlocking { refreshReminders() }
     }
 }

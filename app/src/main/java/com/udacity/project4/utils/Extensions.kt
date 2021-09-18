@@ -6,11 +6,13 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.udacity.project4.MyApp
 import com.udacity.project4.base.BaseRecyclerViewAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -65,4 +67,14 @@ fun View.fadeOut() {
             this@fadeOut.visibility = View.GONE
         }
     })
+}
+
+
+fun String.showToast(duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(MyApp.context, this, duration).show()
+}
+
+
+fun Int.showToast(duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(MyApp.context, this, duration).show()
 }

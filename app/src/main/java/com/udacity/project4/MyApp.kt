@@ -1,6 +1,12 @@
 package com.udacity.project4
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
+import com.udacity.project4.authentication.FbaseUserLiveData
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
@@ -13,6 +19,13 @@ import org.koin.dsl.module
 
 class MyApp : Application() {
 
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        lateinit var context: Context
+
+        lateinit var authenticationState: LiveData<AuthenticationState>
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -23,7 +36,7 @@ class MyApp : Application() {
             //Declare a ViewModel - be later inject into Fragment with dedicated injector using by viewModel()
             viewModel {
                 RemindersListViewModel(
-//                    get(),
+                    get(),
                     get() as ReminderDataSource
                 )
             }
@@ -43,5 +56,19 @@ class MyApp : Application() {
             androidContext(this@MyApp)
             modules(listOf(myModule))
         }
+
+        context = applicationContext
+
+        authenticationState = FbaseUserLiveData().map { user ->
+            if (user != null) {
+                AuthenticationState.AUTHENTICATED
+            } else {
+                AuthenticationState.UNAUTHENTICATED
+            }
+        }
+    }
+
+    enum class AuthenticationState {
+        AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
     }
 }

@@ -1,8 +1,10 @@
 package com.udacity.project4.locationreminders.savereminder
 
+import GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -22,6 +24,7 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
+import com.udacity.project4.MyApp
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -34,11 +37,13 @@ import org.koin.android.ext.android.inject
 
 @RequiresApi(Build.VERSION_CODES.M)
 class SaveReminderFragment : BaseFragment() {
-    val TAG = "Dev/SaveReminderFragment"
+    val TAG = "Dev/" + javaClass.simpleName
 
     //Get the view model this time as a single to be shared with the another fragment
+    private lateinit var contxt: Context
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
+
 
     // Geofencing stuff
     private lateinit var geofencingClient: GeofencingClient
@@ -47,7 +52,7 @@ class SaveReminderFragment : BaseFragment() {
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
         intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(requireContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     override fun onCreateView(
@@ -55,9 +60,7 @@ class SaveReminderFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? {
         Log.d(TAG, "onCreateView")
-
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_save_reminder, container, false)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_save_reminder, container, false)
         setDisplayHomeAsUpEnabled(true)
         binding.viewModel = _viewModel
 
@@ -92,12 +95,14 @@ class SaveReminderFragment : BaseFragment() {
                 longitude = longitude
             )
 
+            Log.d(TAG, reminderItem.toString())
 //            TODO: use the user entered reminder details to:
 //             1) add a geofencing request
-            addGeofence(reminderItem)
+
             // TODO: Will do this later
 //             2) save the reminder to the local db
-            _viewModel.saveReminder(reminderItem)
+//            _viewModel.saveReminder(reminderItem)
+            addGeofenceAndSaveReminder(reminderItem)
         }
     }
 
@@ -108,6 +113,10 @@ class SaveReminderFragment : BaseFragment() {
         _viewModel.onClear()
     }
 
+    private fun addGeofenceAndSaveReminder(reminder: ReminderDataItem) {
+        addGeofence(reminder)
+    }
+
     private fun addGeofence(reminder: ReminderDataItem) {
         val geofence = Geofence.Builder()
             .setRequestId(reminder.id)
@@ -115,7 +124,7 @@ class SaveReminderFragment : BaseFragment() {
                 reminder.longitude!!,
                 GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
             )
-//            .setExpirationDuration(GeofencingConstants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+            .setExpirationDuration(GEOFENCE_EXPIRATION_IN_MILLISECONDS)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
 
@@ -128,23 +137,38 @@ class SaveReminderFragment : BaseFragment() {
             addOnCompleteListener {
                 geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
                     addOnSuccessListener {
-                        Toast.makeText(requireContext(), R.string.geofences_added,
+                        Log.d(TAG, "addOnSuccessListener")
+                        Toast.makeText(context, R.string.geofences_added,
                             Toast.LENGTH_SHORT)
                             .show()
                         Log.e("Add Geofence", geofence.requestId)
-//                        _viewModel.geofenceActivated()
+                        _viewModel.saveReminder(reminder)
                     }
                     addOnFailureListener {
-                        Toast.makeText(requireContext(), R.string.geofences_not_added,
+                        Toast.makeText(context, R.string.geofences_not_added,
                             Toast.LENGTH_SHORT).show()
                         if (it.message != null) {
                             Log.w(TAG, it.message!!)
                         }
+                        _viewModel.saveReminder(reminder)
                     }
                 }
             }
         }
     }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        Log.d(TAG, "onAttach")
+        contxt = context
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Log.d(TAG, "onDetach")
+    }
+
+
 }
 
 

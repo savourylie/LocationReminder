@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -29,8 +30,8 @@ import java.util.*
 
 
 class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
+    val TAG = "Dev/" + javaClass.simpleName
 
-    val TAG = "Dev/SelectLocationFragment"
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
@@ -54,8 +55,10 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
 
 //        TODO: add the map setup implementation
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+
         mapFragment.getMapAsync(this)
 //        TODO: add style to the map
+
 //        TODO: put a marker to location that the user selected
 
 
@@ -65,6 +68,8 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
         _viewModel.selectedPOI.observe(viewLifecycleOwner, Observer { newPoi ->
             newPoi?.let {
                 _viewModel.reminderSelectedLocationStr.value = it.name
+                _viewModel.latitude.value = it.latLng.latitude
+                _viewModel.longitude.value = it.latLng.longitude
             }
         })
 
@@ -118,9 +123,9 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
 
-        val latitude = 22.527141
-        val longitude = 114.050752
-        val zoomLevel = 18f
+        val latitude = 22.5330
+        val longitude = 114.0559
+        val zoomLevel = 15f
 //        val overlaySize = 100f
 
         val homeLatLng = LatLng(latitude, longitude)
@@ -136,7 +141,7 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
 //        map.addGroundOverlay((androidOverlay))
 //        setMapLongClick(map)
         setPoiClick(map)
-//        setMapStyle(map)
+        setMapStyle(map)
         enableMyLocation()
 
     }
@@ -242,23 +247,21 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
         }
     }
 
-//    private var locationCallback: LocationCallback = object: LocationCallback() {
-//        override fun onLocationResult(locationResult: LocationResult) {
-//            val locationList = locationResult.locations
-//            if (locationList.isNotEmpty()) {
-//                //The last location in the list is the newest
-//                val location = locationList.last()
-//                Log.i(
-//                    "MapsActivity",
-//                    "Location: " + location.getLatitude() + " " + location.getLongitude()
-//                )
-//
-//                //Place current location marker
-//                val latLng = LatLng(location.latitude, location.longitude)
-//
-//                //move map camera
-//                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11.0F))
-//            }
-//        }
-//    }
+    private fun setMapStyle(map: GoogleMap) {
+        try {
+            val success = map.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    context,
+                    R.raw.map_style
+                )
+            )
+
+            if (!success) {
+                Log.e(TAG, "Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e(TAG, "Can't find style. Error: ", e)
+
+        }
+    }
 }

@@ -53,5 +53,7 @@
     <string name="pier_39_hint">Go to a pier popular for tourist attractions, carnival games, fresh fish, and delicious sourdough bread!</string>
     <string name="union_square_location">in Union Square</string>
     <string name="geofences_added">Clue Geofence added.</string>
-
+    <string name="unknown_geofence_error">
+        Unknown error: the Geofence service is not available now
+    </string>
 </resources>

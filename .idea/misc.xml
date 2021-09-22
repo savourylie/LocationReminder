@@ -5,6 +5,7 @@
       <map>
         <entry key="app/src/main/res/layout/activity_authentication.xml" value="0.45" />
         <entry key="app/src/main/res/layout/activity_maps.xml" value="0.18958333333333333" />
+        <entry key="app/src/main/res/layout/activity_reminder_description.xml" value="0.375" />
         <entry key="app/src/main/res/layout/activity_reminders.xml" value="0.23369565217391305" />
         <entry key="app/src/main/res/layout/fragment_reminders.xml" value="0.18206521739130435" />
         <entry key="app/src/main/res/layout/fragment_save_reminder.xml" value="0.18958333333333333" />

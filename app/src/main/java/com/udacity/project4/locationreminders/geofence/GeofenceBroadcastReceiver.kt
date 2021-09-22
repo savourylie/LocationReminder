@@ -18,8 +18,14 @@ import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment.Companion.ACTION_GEOFENCE_EVENT
+import com.udacity.project4.utils.sendNotification
 import errorMessage
 import sendGeofenceEnteredNotification
+import android.os.Bundle
+
+import android.content.Intent.getIntent
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+
 
 /**
  * Triggered by the Geofence.  Since we can have many Geofences at once, we pull the request
@@ -53,25 +59,32 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
             if (geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
                 Log.v(TAG, context.getString(R.string.geofence_entered))
+                val args = intent.getBundleExtra("data")
+                val reminder: ReminderDataItem = args!!.getSerializable("reminderDataItem") as ReminderDataItem
+
+                sendNotification(context, reminder)
 
                 val fenceId = when {
-                    geofencingEvent.triggeringGeofences.isNotEmpty() ->
-                        geofencingEvent.triggeringGeofences[0].requestId
+                        geofencingEvent.triggeringGeofences.isNotEmpty() -> {
+                            Log.v(TAG, "Geofence Trigger Found!")
+                            geofencingEvent.triggeringGeofences[0].requestId
+                        }
                     else -> {
-                        Log.e(TAG, "No Geofence Trigger Found! Abort mission@")
+                        Log.e(TAG, "No Geofence Trigger Found! Abort mission!")
                         return
                     }
                 }
             }
 
-            val notificationManager = ContextCompat.getSystemService(
-                context,
-                NotificationManager::class.java
-            ) as NotificationManager
+//            val notificationManager = ContextCompat.getSystemService(
+//                context,
+//                NotificationManager::class.java
+//            ) as NotificationManager
 
-            notificationManager.sendGeofenceEnteredNotification(
-                context, 1
-            )
+//            sendNotification(context, reminder)
+//            notificationManager.sendGeofenceEnteredNotification(
+//                context, 1
+//            )
         }
     }
 }

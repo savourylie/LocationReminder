@@ -32,7 +32,7 @@ class MyApp : Application() {
         /**
          * use Koin Library as a service locator
          */
-        val myModule = module {
+        val viewModelModule = module {
             //Declare a ViewModel - be later inject into Fragment with dedicated injector using by viewModel()
             viewModel {
                 RemindersListViewModel(
@@ -54,7 +54,7 @@ class MyApp : Application() {
 
         startKoin {
             androidContext(this@MyApp)
-            modules(listOf(myModule))
+            modules(listOf(viewModelModule))
         }
 
         context = applicationContext

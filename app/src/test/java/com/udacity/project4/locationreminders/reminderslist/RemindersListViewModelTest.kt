@@ -66,6 +66,7 @@ class RemindersListViewModelTest {
 
         remindersLocalRepository.addReminders(reminder1, reminder2, reminder3)
         remindersListViewModel = RemindersListViewModel(ApplicationProvider.getApplicationContext(), remindersLocalRepository)
+
     }
 
     @Test

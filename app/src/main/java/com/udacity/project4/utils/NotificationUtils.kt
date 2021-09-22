@@ -26,12 +26,15 @@ fun sendNotification(context: Context, reminderDataItem: ReminderDataItem) {
         val channel = NotificationChannel(
             NOTIFICATION_CHANNEL_ID,
             name,
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         )
         notificationManager.createNotificationChannel(channel)
     }
 
     val intent = ReminderDescriptionActivity.newIntent(context.applicationContext, reminderDataItem)
+
+    // Add extra stuff to check if it's working
+    intent.putExtra("woolahlah", "This is working.")
 
     //create a pending intent that opens ReminderDescriptionActivity when the user clicks on the notification
     val stackBuilder = TaskStackBuilder.create(context)

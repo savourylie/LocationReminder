@@ -44,16 +44,17 @@ class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
 
-
     // Geofencing stuff
     private lateinit var geofencingClient: GeofencingClient
     private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 
-    private val geofencePendingIntent: PendingIntent by lazy {
-        val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
-        intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
-        PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-    }
+    private lateinit var geofencePendingIntent: PendingIntent
+
+//    private val geofencePendingIntent: PendingIntent by lazy {
+//        val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
+//        intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
+//        PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -75,7 +76,6 @@ class SaveReminderFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = this
         binding.selectLocation.setOnClickListener {
-            //            Navigate to another fragment to get the user location
             _viewModel.navigationCommand.value =
                 NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
         }
@@ -98,11 +98,20 @@ class SaveReminderFragment : BaseFragment() {
             Log.d(TAG, reminderItem.toString())
 //            TODO: use the user entered reminder details to:
 //             1) add a geofencing request
+//             2) save the reminder to the local db derItem)
+            _viewModel.validateAndSaveReminder(reminderItem)
+            _viewModel.saveReminder(reminderItem)
 
-            // TODO: Will do this later
-//             2) save the reminder to the local db
-//            _viewModel.saveReminder(reminderItem)
-            addGeofenceAndSaveReminder(reminderItem)
+
+            val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
+            intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
+            val args = Bundle()
+            args.putSerializable("reminderDataItem", reminderItem)
+            intent.putExtra("data", args)
+            geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+            addGeofence(reminderItem)
+
         }
     }
 
@@ -111,10 +120,6 @@ class SaveReminderFragment : BaseFragment() {
         super.onDestroy()
         //make sure to clear the view model after destroy, as it's a single view model.
         _viewModel.onClear()
-    }
-
-    private fun addGeofenceAndSaveReminder(reminder: ReminderDataItem) {
-        addGeofence(reminder)
     }
 
     private fun addGeofence(reminder: ReminderDataItem) {
@@ -142,7 +147,8 @@ class SaveReminderFragment : BaseFragment() {
                             Toast.LENGTH_SHORT)
                             .show()
                         Log.e("Add Geofence", geofence.requestId)
-                        _viewModel.saveReminder(reminder)
+
+                        _viewModel.navigationCommand.value = NavigationCommand.Back
                     }
                     addOnFailureListener {
                         Toast.makeText(context, R.string.geofences_not_added,
@@ -151,6 +157,7 @@ class SaveReminderFragment : BaseFragment() {
                             Log.w(TAG, it.message!!)
                         }
                         _viewModel.saveReminder(reminder)
+                        _viewModel.navigationCommand.value = NavigationCommand.Back
                     }
                 }
             }

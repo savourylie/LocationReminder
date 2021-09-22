@@ -15,6 +15,8 @@ import com.udacity.project4.MyApp.Companion.context
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.locationreminders.RemindersActivity
+import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -26,6 +28,8 @@ class AuthenticationActivity : AppCompatActivity() {
         const val TAG = "Dev/AuthenticationActivity"
         const val SIGN_IN_RESULT_CODE = 1113
     }
+
+    val _viewModel: RemindersListViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,9 +130,11 @@ class AuthenticationActivity : AppCompatActivity() {
     }
 
     private fun observeAuthenticationState() {
-        MyApp.authenticationState.observe(this, Observer { authenticationState ->
+        _viewModel.authenticationState.observe(this, Observer { authenticationState ->
+//        MyApp.authenticationState.observe(this, Observer { authenticationState ->
             when (authenticationState) {
-                MyApp.AuthenticationState.AUTHENTICATED -> {
+                RemindersListViewModel.AuthenticationState.AUTHENTICATED -> {
+//                MyApp.AuthenticationState.AUTHENTICATED -> {
                     val intent = Intent(context, RemindersActivity::class.java)
                     startActivity(intent)
                     finish()

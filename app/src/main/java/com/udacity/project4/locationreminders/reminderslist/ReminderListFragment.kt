@@ -142,9 +142,9 @@ class ReminderListFragment : BaseFragment() {
     }
 
     private fun observeAuthenticationState() {
-        MyApp.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
+        _viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
             when (authenticationState) {
-                MyApp.AuthenticationState.UNAUTHENTICATED -> {
+                RemindersListViewModel.AuthenticationState.UNAUTHENTICATED -> {
                     val intent = Intent(context, AuthenticationActivity::class.java)
                     startActivity(intent)
                     activity?.finish()

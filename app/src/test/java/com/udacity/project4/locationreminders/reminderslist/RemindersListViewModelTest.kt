@@ -1,16 +1,15 @@
 package com.udacity.project4.locationreminders.reminderslist
 
-import android.util.Log
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.firebase.FirebaseApp
 import com.udacity.project4.locationreminders.MainCoroutineRule
-import com.udacity.project4.locationreminders.data.FakeDataSource
+import com.udacity.project4.locationreminders.data.FakeLocalRepository
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.notNullValue
 import org.junit.Assert
 import org.junit.Before
@@ -30,7 +29,7 @@ class RemindersListViewModelTest {
 
     // Subject under test
     private lateinit var remindersListViewModel: RemindersListViewModel
-    private lateinit var remindersLocalRepository: FakeDataSource
+    private lateinit var remindersLocalRepository: FakeLocalRepository
 
     // For testing LiveData
     @get:Rule
@@ -38,7 +37,7 @@ class RemindersListViewModelTest {
 
     @Before
     fun setupViewModel() {
-        remindersLocalRepository = FakeDataSource()
+        remindersLocalRepository = FakeLocalRepository()
 
         val reminder1 = ReminderDTO(
             title = "title1",
@@ -63,6 +62,8 @@ class RemindersListViewModelTest {
             latitude = 30.3,
             longitude = 30.3
         )
+
+        FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
 
         remindersLocalRepository.addReminders(reminder1, reminder2, reminder3)
         remindersListViewModel = RemindersListViewModel(ApplicationProvider.getApplicationContext(), remindersLocalRepository)

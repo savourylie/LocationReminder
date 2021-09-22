@@ -23,7 +23,7 @@ class MyApp : Application() {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
 
-        lateinit var authenticationState: LiveData<AuthenticationState>
+//        lateinit var authenticationState: LiveData<RemindersListViewModel.AuthenticationState>
     }
 
     override fun onCreate() {
@@ -32,12 +32,13 @@ class MyApp : Application() {
         /**
          * use Koin Library as a service locator
          */
-        val viewModelModule = module {
+        val myModule = module {
             //Declare a ViewModel - be later inject into Fragment with dedicated injector using by viewModel()
             viewModel {
                 RemindersListViewModel(
                     get(),
                     get() as ReminderDataSource
+//                    get() as FbaseUserLiveData
                 )
             }
             //Declare singleton definitions to be later injected using by inject()
@@ -54,21 +55,21 @@ class MyApp : Application() {
 
         startKoin {
             androidContext(this@MyApp)
-            modules(listOf(viewModelModule))
+            modules(listOf(myModule))
         }
 
         context = applicationContext
 
-        authenticationState = FbaseUserLiveData().map { user ->
-            if (user != null) {
-                AuthenticationState.AUTHENTICATED
-            } else {
-                AuthenticationState.UNAUTHENTICATED
-            }
-        }
+//        authenticationState = FbaseUserLiveData().map { user ->
+//            if (user != null) {
+//                AuthenticationState.AUTHENTICATED
+//            } else {
+//                AuthenticationState.UNAUTHENTICATED
+//            }
+//        }
     }
 
-    enum class AuthenticationState {
-        AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
-    }
+//    enum class AuthenticationState {
+//        AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
+//    }
 }

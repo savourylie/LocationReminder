@@ -99,9 +99,11 @@ class SaveReminderFragment : BaseFragment() {
 //            TODO: use the user entered reminder details to:
 //             1) add a geofencing request
 //             2) save the reminder to the local db derItem)
-            _viewModel.validateAndSaveReminder(reminderItem)
-            _viewModel.saveReminder(reminderItem)
+            val isSaved = _viewModel.validateAndSaveReminder(reminderItem)
 
+            if (!isSaved) {
+                Toast.makeText(context, "Reminder not saved due to invalid input.", Toast.LENGTH_SHORT).show()
+            }
 
             val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
             intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
@@ -111,7 +113,6 @@ class SaveReminderFragment : BaseFragment() {
             geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             addGeofence(reminderItem)
-
         }
     }
 

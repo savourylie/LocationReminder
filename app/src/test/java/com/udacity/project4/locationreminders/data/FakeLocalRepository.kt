@@ -1,13 +1,10 @@
 package com.udacity.project4.locationreminders.data
 
-import androidx.lifecycle.MutableLiveData
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
-import kotlinx.coroutines.runBlocking
-import java.util.LinkedHashMap
 
 //Use FakeDataSource that acts as a test double to the LocalDataSource
-class FakeDataSource(var reminders: MutableList<ReminderDTO>? = mutableListOf()) : ReminderDataSource {
+class FakeLocalRepository(var reminders: MutableList<ReminderDTO>? = mutableListOf()) : ReminderDataSource {
     private var shouldReturnError = false
 
     fun setReturnError(value: Boolean) {

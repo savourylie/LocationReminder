@@ -3,8 +3,9 @@ package com.udacity.project4.locationreminders.reminderslist
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import com.firebase.ui.auth.AuthUI
+import com.udacity.project4.authentication.FbaseUserLiveData
 import com.udacity.project4.base.BaseViewModel
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
@@ -12,18 +13,9 @@ import com.udacity.project4.locationreminders.data.dto.Result
 import kotlinx.coroutines.launch
 
 class RemindersListViewModel(app: Application, private val dataSource: ReminderDataSource): BaseViewModel(app) {
+//class RemindersListViewModel(app: Application, private val dataSource: ReminderDataSource, private val firebaseUserLiveData: FbaseUserLiveData): BaseViewModel(app) {
     // list that holds the reminder data to be displayed on the UI
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
-
-    // Geofencing stuff
-    val _geofenceIndex = MutableLiveData<Int>()
-    val geofenceIndex: LiveData<Int>
-        get() = _geofenceIndex
-
-    val _hintIndex = MutableLiveData<Int>()
-    val hintIndex: LiveData<Int>
-        get() = _hintIndex
-
 
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
@@ -67,14 +59,16 @@ class RemindersListViewModel(app: Application, private val dataSource: ReminderD
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
     }
 
-    fun updateHint(currentIndex: Int) {
-        _hintIndex.value = currentIndex + 1
+    enum class AuthenticationState {
+        AUTHENTICATED, UNAUTHENTICATED, INVALID_AUTHENTICATION
     }
 
-    fun geofenceActivated() {
-        _geofenceIndex.value = _hintIndex.value
+//    val authenticationState: LiveData<AuthenticationState> = firebaseUserLiveData.map { user ->
+    val authenticationState: LiveData<AuthenticationState> = FbaseUserLiveData().map { user ->
+        if (user != null) {
+            AuthenticationState.AUTHENTICATED
+        } else {
+            AuthenticationState.UNAUTHENTICATED
+        }
     }
-
-    fun geofenceIsActive() =_geofenceIndex.value == _hintIndex.value
-    fun nextGeofenceIndex() = _hintIndex.value ?: 0
 }

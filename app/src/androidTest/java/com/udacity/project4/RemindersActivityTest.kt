@@ -10,7 +10,9 @@ import com.udacity.project4.locationreminders.data.local.RemindersLocalRepositor
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -67,5 +69,9 @@ class RemindersActivityTest :
 
 
 //    TODO: add End to End testing to the app
+    @Test
+    fun trivialTest() {
+        Assert.assertEquals(1, 1)
+    }
 
 }

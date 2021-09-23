@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.reminderslist
 
 import android.app.Application
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
@@ -12,10 +13,14 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.runner.permission.PermissionRequester
 import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource
 import com.udacity.project4.R
 import com.udacity.project4.RemindersActivityTest
@@ -87,37 +92,65 @@ class ReminderListFragmentTest: AutoCloseKoinTest() {
         }
     }
 
-    private val dataBindingIdlingResource = DataBindingIdlingResource()
-    @Before
-    fun registerIdlingResource() {
-        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
-        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
-    }
-
-    @After
-    fun unregisterIdlingResource() {
-        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
-        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
-    }
-
 //    TODO: test the navigation of the fragments.
     @Test
     fun noDataInDb_noDataTextViewDisplayedInUi() {
-
-    // Start up Tasks screen.
-        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
-        dataBindingIdlingResource.monitorActivity(activityScenario)
-//        val bundle = ReminderListFragmentArgs
-//        val bundle = TaskDetailFragmentArgs(activeTask.id).toBundle()
-//        launchFragmentInContainer<TaskDetailFragment>(bundle, R.style.AppTheme)
-
+        launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
         onView(withId(R.id.noDataTextView)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
     }
 
-//    @Test
-//    fun clickFAB_navigateToSaveReminderFragment() = runBlockingTest {
+    @Test
+    fun clickFAB_navigateToSaveReminderFragment() = runBlockingTest {
+        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        val navController = mock(NavController::class.java)
+
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        onView(withId(R.id.addReminderFAB))
+            .perform(click())
+
+        verify(navController).navigate(
+            ReminderListFragmentDirections.toSaveReminder())
+    }
+
+    @Test
+    fun locationPermissionNotGranted_snackBarWithRequestShowsUp() {
+        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        val navController = mock(NavController::class.java)
+
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+//        PermissionRequester().apply {
 //
-//    }
+//            addPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+//
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                addPermissions(android.Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+//            }
+//            requestPermissions()
+//        }
+
+        // revoke the foreground location permission
+        InstrumentationRegistry
+            .getInstrumentation()
+            .uiAutomation
+            .executeShellCommand("pm revoke ${appContext.packageName} android.permission.ACCESS_FINE_LOCATION")
+
+        // revoke the background location permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            InstrumentationRegistry
+                .getInstrumentation()
+                .uiAutomation
+                .executeShellCommand("pm revoke ${appContext.packageName} android.permission.ACCESS_BACKGROUND_LOCATION")
+        }
+
+        onView(withId(com.google.android.material.R.id.snackbar_text))
+            .check(matches(withText(R.string.permission_denied_explanation)))
+    }
 //    TODO: test the displayed data on the UI.
 //    TODO: add testing for the error messages.
 }

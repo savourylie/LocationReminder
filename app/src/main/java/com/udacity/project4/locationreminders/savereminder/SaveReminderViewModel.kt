@@ -1,6 +1,7 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -17,6 +18,8 @@ import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
     BaseViewModel(app) {
+    val TAG = javaClass.simpleName
+
     val reminderTitle = MutableLiveData<String>()
     val reminderDescription = MutableLiveData<String>()
     val reminderSelectedLocationStr = MutableLiveData<String>()
@@ -40,6 +43,8 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
      * Validate the entered data then saves the reminder data to the DataSource
      */
     fun validateAndSaveReminder(reminderData: ReminderDataItem): Boolean {
+        Log.d(TAG, validateEnteredData(reminderData).toString())
+
         if (validateEnteredData(reminderData)) {
             saveReminder(reminderData)
 
@@ -84,6 +89,17 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             showSnackBarInt.value = R.string.err_select_location
             return false
         }
+
+        if (reminderData.latitude == null) {
+            showSnackBarInt.value = R.string.err_select_location
+            return false
+        }
+
+        if (reminderData.longitude == null) {
+            showSnackBarInt.value = R.string.err_select_location
+            return false
+        }
+
         return true
     }
 }

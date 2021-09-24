@@ -103,16 +103,16 @@ class SaveReminderFragment : BaseFragment() {
 
             if (!isSaved) {
                 Toast.makeText(context, "Reminder not saved due to invalid input.", Toast.LENGTH_SHORT).show()
+            } else {
+                val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
+                intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
+                val args = Bundle()
+                args.putSerializable("reminderDataItem", reminderItem)
+                intent.putExtra("data", args)
+                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+                addGeofence(reminderItem)
             }
-
-            val intent = Intent(requireActivity(), GeofenceBroadcastReceiver::class.java)
-            intent.action = ReminderListFragment.ACTION_GEOFENCE_EVENT
-            val args = Bundle()
-            args.putSerializable("reminderDataItem", reminderItem)
-            intent.putExtra("data", args)
-            geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-            addGeofence(reminderItem)
         }
     }
 

@@ -133,16 +133,16 @@ class SaveReminderFragment : BaseFragment() {
 
     private fun addGeofence(reminder: ReminderDataItem) {
         val geofence = Geofence.Builder()
-            .setRequestId(reminder.id)
-            .setCircularRegion(reminder.latitude!!,
+            .setRequestId(reminder.id) // Set reminder id
+            .setCircularRegion(reminder.latitude!!, // Set geofence location
                 reminder.longitude!!,
                 GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
             )
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE) // Set expiration
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER) // Set transition type
             .build()
 
-        val geofencingRequest = GeofencingRequest.Builder()
+        val geofencingRequest = GeofencingRequest.Builder() // Build request
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             .addGeofence(geofence)
             .build()
@@ -156,15 +156,16 @@ class SaveReminderFragment : BaseFragment() {
                     .show()
                 Log.e("Add Geofence", geofence.requestId)
 
+                _viewModel.saveReminder(reminder)
                 _viewModel.navigationCommand.value = NavigationCommand.Back
             }
+
             addOnFailureListener {
                 Toast.makeText(context, R.string.geofences_not_added,
                     Toast.LENGTH_SHORT).show()
                 if (it.message != null) {
                     Log.w(TAG, it.message!!)
                 }
-                _viewModel.saveReminder(reminder)
                 _viewModel.navigationCommand.value = NavigationCommand.Back
             }
         }

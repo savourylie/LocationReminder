@@ -99,6 +99,7 @@ class SaveReminderFragment : BaseFragment() {
 //            TODO: use the user entered reminder details to:
 //             1) add a geofencing request
 //             2) save the reminder to the local db derItem)
+
             val isSaved = _viewModel.validateAndSaveReminder(reminderItem)
 
             if (!isSaved) {
@@ -109,11 +110,18 @@ class SaveReminderFragment : BaseFragment() {
                 val args = Bundle()
                 args.putSerializable("reminderDataItem", reminderItem)
                 intent.putExtra("data", args)
-                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+//                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, reminderItem.id.toInt())
 
+//                enableMyLocation()
                 addGeofence(reminderItem)
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart")
     }
 
     override fun onDestroy() {
@@ -130,7 +138,7 @@ class SaveReminderFragment : BaseFragment() {
                 reminder.longitude!!,
                 GeofencingConstants.GEOFENCE_RADIUS_IN_METERS
             )
-            .setExpirationDuration(GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
 
@@ -139,30 +147,53 @@ class SaveReminderFragment : BaseFragment() {
             .addGeofence(geofence)
             .build()
 
-        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-            addOnCompleteListener {
-                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
-                    addOnSuccessListener {
-                        Log.d(TAG, "addOnSuccessListener")
-                        Toast.makeText(context, R.string.geofences_added,
-                            Toast.LENGTH_SHORT)
-                            .show()
-                        Log.e("Add Geofence", geofence.requestId)
+        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+            addOnSuccessListener {
+                Log.d(TAG, "addOnSuccessListener")
+                Toast.makeText(requireContext(),
+                    R.string.geofences_added,
+                    Toast.LENGTH_SHORT)
+                    .show()
+                Log.e("Add Geofence", geofence.requestId)
 
-                        _viewModel.navigationCommand.value = NavigationCommand.Back
-                    }
-                    addOnFailureListener {
-                        Toast.makeText(context, R.string.geofences_not_added,
-                            Toast.LENGTH_SHORT).show()
-                        if (it.message != null) {
-                            Log.w(TAG, it.message!!)
-                        }
-                        _viewModel.saveReminder(reminder)
-                        _viewModel.navigationCommand.value = NavigationCommand.Back
-                    }
+                _viewModel.navigationCommand.value = NavigationCommand.Back
+            }
+            addOnFailureListener {
+                Toast.makeText(context, R.string.geofences_not_added,
+                    Toast.LENGTH_SHORT).show()
+                if (it.message != null) {
+                    Log.w(TAG, it.message!!)
                 }
+                _viewModel.saveReminder(reminder)
+                _viewModel.navigationCommand.value = NavigationCommand.Back
             }
         }
+
+//        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
+//            addOnCompleteListener {
+//                geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+//                    addOnSuccessListener {
+//                        Log.d(TAG, "addOnSuccessListener")
+//                        Toast.makeText(requireContext(),
+//                            R.string.geofences_added,
+//                            Toast.LENGTH_SHORT)
+//                                .show()
+//                        Log.e("Add Geofence", geofence.requestId)
+//
+//                        _viewModel.navigationCommand.value = NavigationCommand.Back
+//                    }
+//                    addOnFailureListener {
+//                        Toast.makeText(context, R.string.geofences_not_added,
+//                            Toast.LENGTH_SHORT).show()
+//                        if (it.message != null) {
+//                            Log.w(TAG, it.message!!)
+//                        }
+//                        _viewModel.saveReminder(reminder)
+//                        _viewModel.navigationCommand.value = NavigationCommand.Back
+//                    }
+//                }
+//            }
+//        }
     }
 
     override fun onAttach(context: Context) {

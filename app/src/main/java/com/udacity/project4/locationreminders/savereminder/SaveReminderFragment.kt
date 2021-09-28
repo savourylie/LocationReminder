@@ -34,6 +34,7 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
+import kotlin.random.Random
 
 @RequiresApi(Build.VERSION_CODES.M)
 class SaveReminderFragment : BaseFragment() {
@@ -110,8 +111,9 @@ class SaveReminderFragment : BaseFragment() {
                 val args = Bundle()
                 args.putSerializable("reminderDataItem", reminderItem)
                 intent.putExtra("data", args)
-                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
-//                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, reminderItem.id.toInt())
+//                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+                geofencePendingIntent = PendingIntent.getBroadcast(MyApp.context, Random.nextInt(0, 1000), intent, PendingIntent.FLAG_ONE_SHOT)
+
 
 //                enableMyLocation()
                 addGeofence(reminderItem)

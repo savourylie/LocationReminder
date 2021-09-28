@@ -61,13 +61,21 @@ class ReminderListFragment : BaseFragment() {
                 inflater,
                 R.layout.fragment_reminders, container, false
             )
+
         binding.viewModel = _viewModel
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(false)
         setTitle(getString(R.string.app_name))
 
-        binding.refreshLayout.setOnRefreshListener { _viewModel.loadReminders() }
+        binding.refreshLayout.setOnRefreshListener {
+            Log.d(TAG, "Refresh Begun")
+
+            _viewModel.loadReminders()
+            _viewModel.showLoading.value = false
+
+            Log.d(TAG, "Refresh finished")
+        }
 
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
 

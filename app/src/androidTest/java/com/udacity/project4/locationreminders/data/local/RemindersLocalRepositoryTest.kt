@@ -18,13 +18,68 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.*
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 //Medium Test to test the repository
 @MediumTest
 class RemindersLocalRepositoryTest {
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
 
-//    TODO: Add testing implementation to the RemindersLocalRepository.kt
+    private lateinit var remindersLocalRepository: RemindersLocalRepository
+    private lateinit var database: RemindersDatabase
+
+    @Before
+    fun setup() {
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        )
+            .allowMainThreadQueries()
+            .build()
+
+        remindersLocalRepository =
+            RemindersLocalRepository(
+                database.reminderDao(),
+                Dispatchers.Main
+            )
+    }
+
+    @After
+    fun tearDown() {
+        database.close()
+    }
+
+    @Test
+    fun saveReminders_retrievesReminders() = runBlocking {
+        // GIVEN - a new reminder saved in the database
+
+        val id = UUID.randomUUID().toString()
+
+        val reminder = ReminderDTO(
+            title = "Title",
+            description = "Description",
+            location = "Taipei, Taiwan",
+            latitude = 25.101624722772275,
+            longitude = 121.54853129517073,
+            id = id
+        )
+
+        remindersLocalRepository.saveReminder(reminder)
+
+        // WHEN - reminder retrieved by id
+        val loaded = remindersLocalRepository.getReminder(id)
+
+        // THEN - same reminder is returned
+        assert(loaded is Result.Success)
+        loaded as Result.Success
+        assertThat(loaded.data.title, `is`("Title"))
+        assertThat(loaded.data.description, `is`("Description"))
+        assertThat(loaded.data.location, `is`("Taipei, Taiwan"))
+        assertThat(loaded.data.longitude, `is`(121.54853129517073))
+        assertThat(loaded.data.latitude, `is`(25.101624722772275))
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import android.util.Log
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -10,20 +11,20 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.getOrAwaitValue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.notNullValue
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import org.hamcrest.MatcherAssert.assertThat
+import org.junit.*
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 
 @RunWith(AndroidJUnit4::class)
 @ExperimentalCoroutinesApi
 class RemindersListViewModelTest {
     val TAG = "RemindersListViewModelTest"
 
-    // This is for swaping out the main thread with a testing thread
-    // so that determinism is gurantteed and test is not flaky
+    // This is for swapping out the main thread with a testing thread
+    // so that determinism is guaranteed and test is not flaky
     @get:Rule
     val mainCoroutineRule = MainCoroutineRule()
 
@@ -37,6 +38,8 @@ class RemindersListViewModelTest {
 
     @Before
     fun setupViewModel() {
+        stopKoin()
+
         remindersLocalRepository = FakeLocalRepository()
 
         val reminder1 = ReminderDTO(
@@ -70,6 +73,11 @@ class RemindersListViewModelTest {
 
     }
 
+    @After
+    fun tearDown() {
+        stopKoin()
+    }
+
     @Test
     fun loadRemindersToReminderList() {
         runBlockingTest {
@@ -83,4 +91,32 @@ class RemindersListViewModelTest {
             Assert.assertEquals(remindersList[1].longitude, remindersLocalRepository.reminders?.get(1)?.longitude)
         }
     }
+
+    @Test
+    fun loadReminders_showLoading() {
+        mainCoroutineRule.pauseDispatcher()
+        remindersListViewModel.loadReminders()
+        assertThat(remindersListViewModel.showLoading.getOrAwaitValue(), `is`(true))
+        mainCoroutineRule.resumeDispatcher()
+        assertThat(remindersListViewModel.showLoading.getOrAwaitValue(), `is`(false))
+    }
+
+    @Test
+    fun loadRemindersWhenRemindersAreUnavailable_callErrorToDisplay() {
+        remindersLocalRepository.setReturnError(true)
+
+        remindersListViewModel.loadReminders()
+
+        assertThat(remindersListViewModel.error.getOrAwaitValue(), `is`(true))
+    }
+
+    @Test
+    fun loadRemindersWhenRemindersAreAvailable_callSuccessToDisplay() {
+        remindersLocalRepository.setReturnError(false)
+
+        remindersListViewModel.loadReminders()
+
+        assertThat(remindersListViewModel.error.getOrAwaitValue(), `is`(false))
+    }
+
 }

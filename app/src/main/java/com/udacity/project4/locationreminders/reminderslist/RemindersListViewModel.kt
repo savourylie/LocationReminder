@@ -15,7 +15,10 @@ import kotlinx.coroutines.launch
 class RemindersListViewModel(app: Application, private val dataSource: ReminderDataSource): BaseViewModel(app) {
 //class RemindersListViewModel(app: Application, private val dataSource: ReminderDataSource, private val firebaseUserLiveData: FbaseUserLiveData): BaseViewModel(app) {
     // list that holds the reminder data to be displayed on the UI
+//    lateinit var remindersList: LiveData<Result<List<ReminderDataItem>>>
     val remindersList = MutableLiveData<List<ReminderDataItem>>()
+    val remindersListResult = MutableLiveData<Result<List<ReminderDTO>>>()
+    lateinit var error: LiveData<Boolean>
 
     /**
      * Get all the reminders from the DataSource and add them to the remindersList to be shown on the UI,
@@ -42,9 +45,16 @@ class RemindersListViewModel(app: Application, private val dataSource: ReminderD
                         )
                     })
                     remindersList.value = dataList
+                    remindersListResult.value = result
+                    error = remindersListResult.map {it is Result.Error }
                 }
-                is Result.Error ->
+                is Result.Error -> {
+                    remindersListResult.value = result
+                    error = remindersListResult.map {
+                        it is Result.Error
+                    }
                     showSnackBar.value = result.message
+                }
             }
 
             //check if no data has to be shown
@@ -55,6 +65,7 @@ class RemindersListViewModel(app: Application, private val dataSource: ReminderD
     /**
      * Inform the user that there's not any data if the remindersList is empty
      */
+
     private fun invalidateShowNoData() {
         showNoData.value = remindersList.value == null || remindersList.value!!.isEmpty()
     }

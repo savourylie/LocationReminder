@@ -70,10 +70,8 @@ class ReminderListFragment : BaseFragment() {
 
         binding.refreshLayout.setOnRefreshListener {
             Log.d(TAG, "Refresh Begun")
-
             _viewModel.loadReminders()
-            _viewModel.showLoading.value = false
-
+            binding.refreshLayout.isRefreshing = false
             Log.d(TAG, "Refresh finished")
         }
 
@@ -160,6 +158,7 @@ class ReminderListFragment : BaseFragment() {
             }
         })
     }
+
 
 //    private fun checkPermissionsAndStartGeofencing() {
 ////        if (_viewModel.geofenceIsActive()) return

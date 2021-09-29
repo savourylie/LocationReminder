@@ -19,7 +19,7 @@ class FakeLocalRepository(var reminders: MutableList<ReminderDTO>? = mutableList
             }
         }
 
-        return Result.Error(message = "Sorry, no data. You need to look somewhere else man.",
+        return Result.Error(message = "Test error. Sorry, no data. You need to look somewhere else man.",
             statusCode = null)
     }
 
@@ -35,7 +35,7 @@ class FakeLocalRepository(var reminders: MutableList<ReminderDTO>? = mutableList
         }
 
         return Result.Error(
-            message = "Sorry, no data. You need to look somewhere else man.",
+            message = "Test error. Sorry, no data. You need to look somewhere else man.",
             statusCode = null
         )
     }

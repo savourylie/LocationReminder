@@ -23,7 +23,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     val reminderTitle = MutableLiveData<String>()
     val reminderDescription = MutableLiveData<String>()
     val reminderSelectedLocationStr = MutableLiveData<String>()
-//    val selectedPOI = MutableLiveData<PointOfInterest>()
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
 
@@ -34,7 +33,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         reminderTitle.value = null
         reminderDescription.value = null
         reminderSelectedLocationStr.value = null
-//        selectedPOI.value = null
         latitude.value = null
         longitude.value = null
     }
@@ -42,11 +40,18 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     /**
      * Validate the entered data then saves the reminder data to the DataSource
      */
-    fun validateAndSaveReminder(reminderData: ReminderDataItem): Boolean {
-        Log.d(TAG, validateEnteredData(reminderData).toString())
+    fun validateAndSaveReminder(): Boolean {
 
-        if (validateEnteredData(reminderData)) {
-            saveReminder(reminderData)
+        val reminderItem =  ReminderDataItem(
+            title = reminderTitle.value,
+            description = reminderDescription.value,
+            location = reminderSelectedLocationStr.value,
+            latitude = latitude.value,
+            longitude = longitude.value
+        )
+
+        if (validateEnteredData()) {
+            saveReminder(reminderItem)
 
             return true
         }
@@ -79,23 +84,13 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     /**
      * Validate the entered data and show error to the user if there's any invalid data
      */
-    private fun validateEnteredData(reminderData: ReminderDataItem): Boolean {
-        if (reminderData.title.isNullOrEmpty()) {
+    fun validateEnteredData(): Boolean {
+        if (reminderTitle.value.isNullOrEmpty()) {
             showSnackBarInt.value = R.string.err_enter_title
             return false
         }
 
-        if (reminderData.location.isNullOrEmpty()) {
-            showSnackBarInt.value = R.string.err_select_location
-            return false
-        }
-
-        if (reminderData.latitude == null) {
-            showSnackBarInt.value = R.string.err_select_location
-            return false
-        }
-
-        if (reminderData.longitude == null) {
+        if (reminderSelectedLocationStr.value.isNullOrEmpty()) {
             showSnackBarInt.value = R.string.err_select_location
             return false
         }

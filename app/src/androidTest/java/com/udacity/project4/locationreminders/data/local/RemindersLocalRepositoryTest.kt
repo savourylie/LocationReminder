@@ -82,4 +82,18 @@ class RemindersLocalRepositoryTest {
         assertThat(loaded.data.latitude, `is`(25.101624722772275))
     }
 
+    @Test
+    fun noReminderInDb_getReminderByIdReturnsError() {
+        // GIVEN - a random id not in database
+        val id = UUID.randomUUID().toString()
+
+        // WHEN - retrieve reminder of that id from database
+        val loaded = runBlocking {
+            remindersLocalRepository.getReminder(id)
+        }
+
+        // THEN - an error is returned
+        assert(loaded is Result.Error)
+    }
+
 }

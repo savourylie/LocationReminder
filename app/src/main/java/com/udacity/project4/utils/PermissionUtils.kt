@@ -18,24 +18,6 @@ const val BACKGROUND_LOCATION_PERMISSION_INDEX = 1
 
 @TargetApi(29)
 fun foregroundAndBackgroundLocationPermissionApproved(context: Context): Boolean {
-
-//    val foregroundLocationApproved = (
-//            PackageManager.PERMISSION_GRANTED ==
-//                    ActivityCompat.checkSelfPermission(context,
-//                        Manifest.permission.ACCESS_FINE_LOCATION)
-//            )
-//
-//    val backgroundLocationApproved =
-//        if (runningQOrLater) {
-//            PackageManager.PERMISSION_GRANTED ==
-//                    ActivityCompat.checkSelfPermission(
-//                        context, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-//                    )
-//        } else {
-//            true
-//        }
-////    return foregroundLocationApproved && backgroundLocationApproved
-
     return foregroundLocationPermissionApproved(context) && backgroundLocationPermissionApproved(context)
 }
 

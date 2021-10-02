@@ -3,10 +3,10 @@ package com.udacity.project4.locationreminders.savereminder
 import android.app.Application
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
@@ -19,7 +19,6 @@ import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
-import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.util.PermissionUtils
 import com.udacity.project4.util.ToastMatcher
@@ -27,7 +26,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
-import org.junit.Assert.*
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -39,7 +37,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
-import org.koin.test.inject
+
 
 @FixMethodOrder(MethodSorters.JVM)
 @RunWith(AndroidJUnit4::class)
@@ -99,7 +97,7 @@ class SaveReminderFragmentTest: AutoCloseKoinTest() {
     }
 
     @Test
-    fun whenLocationNotSelected_popUpToast() = runBlockingTest {
+    fun whenLocationNotSelected_SnackbarShowsUp() = runBlockingTest {
 
         PermissionUtils.grantPermissions()
 
@@ -111,8 +109,7 @@ class SaveReminderFragmentTest: AutoCloseKoinTest() {
             .perform(ViewActions.closeSoftKeyboard())
         onView(withId(R.id.saveReminder))
             .perform(click())
-        onView(withText("Reminder not saved due to invalid input."))
-            .inRoot(ToastMatcher())
-            .check(matches(isDisplayed()))
+        onView(withText(R.string.err_select_location))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
     }
 }

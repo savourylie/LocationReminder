@@ -178,13 +178,15 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
             latSelected = latLngMap["lat"]!!
             lngSelected = latLngMap["lng"]!!
 
-            if (deviceLocationSettingOn == null) {
-                checkDeviceLocationSettings()
-            }
+            onLocationSelected()
 
-            deviceLocationSettingOn?.let {
-                if (it) onLocationSelected() else checkDeviceLocationSettings()
-            }
+//            if (deviceLocationSettingOn == null) {
+//                checkDeviceLocationSettings()
+//            }
+//
+//            deviceLocationSettingOn?.let {
+//                if (it) onLocationSelected() else checkDeviceLocationSettings()
+//            }
         }
     }
 
@@ -218,13 +220,14 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
             latSelected = (poiMap["lat"] as Double?)!!
             lngSelected = (poiMap["lng"] as Double?)!!
 
-            if (deviceLocationSettingOn == null) {
-                checkDeviceLocationSettings()
-            }
-
-            deviceLocationSettingOn?.let {
-                if (it) onLocationSelected() else checkDeviceLocationSettings()
-            }
+            onLocationSelected()
+//            if (deviceLocationSettingOn == null) {
+//                checkDeviceLocationSettings()
+//            }
+//
+//            deviceLocationSettingOn?.let {
+//                if (it) onLocationSelected() else checkDeviceLocationSettings()
+//            }
         }
     }
 
@@ -276,30 +279,12 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
 //    }
 
     fun enableMyLocation() {
-//        if (isPermissionGranted()) {
-//        if (foregroundAndBackgroundLocationPermissionApproved(context!!)) {
-        if (foregroundLocationPermissionApproved(context!!)) {
+        if (!foregroundLocationPermissionApproved(context!!)) {
 
-
-//            val snackBar = Snackbar.make(
-//                binding.root,
-//                R.string.permission_denied_explanation,
-//                Snackbar.LENGTH_INDEFINITE
-//            )
-//                .setAction(R.string.settings) {
-//                    startActivity(Intent().apply {
-//                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-//                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-//                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//                    })
-//                }.show()
-
-            checkDeviceLocationSettings(true)
-
-
-        } else {
-//            requestForegroundAndBackgroundLocationPermissions(context!!, ::requestPermissions)
             requestForegroundPermission(context!!, ::requestPermissions)
+        } else {
+            map.setMyLocationEnabled(true)
+            map.uiSettings.isMyLocationButtonEnabled = true
         }
     }
 
@@ -332,58 +317,9 @@ class SelectLocationFragment() : BaseFragment(), OnMapReadyCallback {
                     })
                 }.show()
         } else {
-            enableMyLocation()
-//            checkDeviceLocationSettings()
-        }
-    }
-
-    fun checkDeviceLocationSettings(resolve:Boolean = true) {
-        /*
-        Check device location settings are on,
-        If not, pop up the snackbar and ask the user to enable it
-         */
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val settingsClient = LocationServices.getSettingsClient(requireActivity())
-        val locationSettingsResponseTask = settingsClient.checkLocationSettings(builder.build())
-
-        locationSettingsResponseTask.addOnSuccessListener {
-            deviceLocationSettingOn = true
-
             map.setMyLocationEnabled(true)
             map.uiSettings.isMyLocationButtonEnabled = true
-        }
-
-        locationSettingsResponseTask.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException && resolve) {
-                try {
-                    exception.startResolutionForResult(requireActivity(),
-                        REQUEST_TURN_DEVICE_LOCATION_ON
-                    )
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d(TAG, "Error getting location settings resolution: " + sendEx.message)
-                }
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-                ).setAction(android.R.string.ok) {
-                    checkDeviceLocationSettings()
-                }.show()
-            }
-            deviceLocationSettingOn = false
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        Log.d(TAG, "onActivityResult")
-
-        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
-            checkDeviceLocationSettings(false)
+//            enableMyLocation()
         }
     }
 }
